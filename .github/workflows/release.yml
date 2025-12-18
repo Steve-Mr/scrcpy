@@ -109,7 +109,7 @@ jobs:
             wget git nasm \
             libx11-dev libxext-dev libxcursor-dev libxi-dev libxinerama-dev \
             libxrandr-dev libxss-dev libwayland-dev libxkbcommon-dev wayland-protocols \
-            libv4l-dev zlib1g-dev \
+            libv4l-dev zlib1g-dev libjpeg62-turbo-dev \
             autoconf automake libtool libudev-dev unzip
           pip3 install meson
 
