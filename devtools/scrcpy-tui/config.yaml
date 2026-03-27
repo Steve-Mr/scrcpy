@@ -1,0 +1,17 @@
+presets:
+  - name: "High Quality (1080p, 60fps)"
+    max_resolution: "1920"
+    max_fps: 60
+    video_codec: "h265"
+    video_bit_rate: "16M"
+  - name: "Low Latency (720p, 30fps)"
+    max_resolution: "1280"
+    max_fps: 30
+    video_codec: "h264"
+    video_bit_rate: "4M"
+  - name: "VLC Player"
+    max_resolution: "1920"
+    max_fps: 60
+    app_bindings:
+      "VLC": "org.videolan.vlc"
+    args: ["--no-audio"]
