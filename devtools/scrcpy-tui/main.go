@@ -94,11 +94,19 @@ func findBinaries() (string, string) {
 	scrcpy := "scrcpy"
 	adb := "adb"
 
-	if _, err := os.Stat(filepath.Join(cwd, "scrcpy")); err == nil {
-		scrcpy = filepath.Join(cwd, "scrcpy")
+	// Add .exe on Windows
+	scrcpyExe := "scrcpy"
+	adbExe := "adb"
+	if os.PathSeparator == '\\' {
+		scrcpyExe += ".exe"
+		adbExe += ".exe"
 	}
-	if _, err := os.Stat(filepath.Join(cwd, "adb")); err == nil {
-		adb = filepath.Join(cwd, "adb")
+
+	if _, err := os.Stat(filepath.Join(cwd, scrcpyExe)); err == nil {
+		scrcpy = filepath.Join(cwd, scrcpyExe)
+	}
+	if _, err := os.Stat(filepath.Join(cwd, adbExe)); err == nil {
+		adb = filepath.Join(cwd, adbExe)
 	}
 	return scrcpy, adb
 }
@@ -137,13 +145,18 @@ func getApps(scrcpyPath, adbPath, device string) ([]string, error) {
 	scanner := bufio.NewScanner(bytes.NewReader(output))
 	for scanner.Scan() {
 		line := scanner.Text()
+		line = strings.TrimSpace(line)
 		if strings.Contains(line, "package:") {
 			apps = append(apps, strings.TrimPrefix(line, "package:"))
-		} else if strings.Contains(line, " - ") {
-			parts := strings.SplitN(line, " - ", 2)
-			if len(parts) > 1 {
-				// Use the package name (the first part)
-				apps = append(apps, strings.TrimSpace(parts[0]))
+		} else if (strings.HasPrefix(line, "- ") || strings.HasPrefix(line, "* ")) && len(line) > 2 {
+			// scrcpy --list-apps output format:
+			//  - App Name                      com.example.app
+			//  * System App Name               com.android.system
+			content := line[2:]
+			// The package name is at the end of the line
+			parts := strings.Fields(content)
+			if len(parts) >= 1 {
+				apps = append(apps, parts[len(parts)-1])
 			}
 		}
 	}
@@ -321,6 +334,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.maxFPS = fmt.Sprintf("%d", p.MaxFPS)
 						m.codec = p.VideoCodec
 						m.bitRate = p.VideoBitRate
+						if p.AppBindings != nil {
+							// If there's an app binding, select the first one for now
+							// or we could show another list if there are multiple.
+							for _, pkg := range p.AppBindings {
+								m.selectedApp = pkg
+								break
+							}
+						}
 						break
 					}
 				}

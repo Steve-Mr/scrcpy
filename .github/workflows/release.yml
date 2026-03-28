@@ -198,3 +198,33 @@ jobs:
         with:
           name: scrcpy-release-${{ env.VERSION }}
           path: release/output
+
+  build-scrcpy-tui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: devtools/scrcpy-tui/go.sum
+
+      - name: Build scrcpy-tui
+        run: |
+          cd devtools/scrcpy-tui
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o scrcpy-tui-linux-x86_64
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o scrcpy-tui-windows-x86_64.exe
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o scrcpy-tui-macos-x86_64
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o scrcpy-tui-macos-arm64
+
+      - name: Upload scrcpy-tui artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrcpy-tui
+          path: |
+            devtools/scrcpy-tui/scrcpy-tui-linux-x86_64
+            devtools/scrcpy-tui/scrcpy-tui-windows-x86_64.exe
+            devtools/scrcpy-tui/scrcpy-tui-macos-x86_64
+            devtools/scrcpy-tui/scrcpy-tui-macos-arm64

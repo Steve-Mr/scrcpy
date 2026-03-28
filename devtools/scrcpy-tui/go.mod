@@ -1,6 +1,8 @@
 module github.com/Genymobile/scrcpy/devtools/scrcpy-tui
 
-go 1.24.3
+go 1.24.2
+
+toolchain go1.24.3
 
 require (
 	github.com/charmbracelet/bubbles v1.0.0
